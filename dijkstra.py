@@ -53,16 +53,23 @@ class flight_path():
             dst_airport = flight[5]
             local_arrv = (int(flight[6]) + 1200) % 2400
             local_arrv_ap = flight[7]
+            local_arrv_gmt = local_arrv + self.gmt_offsets[dst_airport]
+            local_dep_gmt = local_dep + self.gmt_offsets[src_airport]
+
+            local_arrv_gmt_m = local_arrv_gmt % 100
+            local_dep_gmt_m = local_dep_gmt % 100                                                                                                                                                                                       
+
+            local_arrv_gmt_h = local_arrv_gmt - local_arrv_gmt_m
+            local_dep_gmt_h = local_dep_gmt - local_dep_gmt_m
             total_time_diff = abs(
-                local_arrv + self.gmt_offsets[dst_airport]
+                ((local_dep_gmt_h/100 * 60) + local_dep_gmt_m)
                 -
-                local_dep + self.gmt_offsets[src_airport]
-            )
+                ((local_arrv_gmt_h/100 * 60) + local_arrv_gmt_m)
+                )
             self.graph.add_edge(
                 src_airport, dst_airport,
                 airline, flight_number, total_time_diff
             )
-        print(self.graph.edges['ABQ'])
 
 
 def main():
