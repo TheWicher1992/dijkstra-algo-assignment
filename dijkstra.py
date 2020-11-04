@@ -48,28 +48,49 @@ class flight_path():
             airline = flight[0]
             flight_number = flight[1]
             src_airport = flight[2]
-            local_dep = (int(flight[3]) + 1200) % 2400
+
             local_dep_ap = flight[4]
+
+            local_dep = int(flight[3]) if local_dep_ap == 'A' else (
+                (int(flight[3]) + 1200) % 2400)
+
             dst_airport = flight[5]
-            local_arrv = (int(flight[6]) + 1200) % 2400
+
             local_arrv_ap = flight[7]
+
+            local_arrv = int(flight[6]) if local_arrv_ap == 'A' else (
+                (int(flight[6]) + 1200) % 2400)
+
             local_arrv_gmt = local_arrv + self.gmt_offsets[dst_airport]
             local_dep_gmt = local_dep + self.gmt_offsets[src_airport]
 
-            local_arrv_gmt_m = local_arrv_gmt % 100
-            local_dep_gmt_m = local_dep_gmt % 100                                                                                                                                                                                       
+            local_arrv_gmt = (
+                local_arrv + self.gmt_offsets[dst_airport] + 2400) if local_arrv_gmt < 0 else local_arrv_gmt
+            local_dep_gmt = (
+                local_dep + self.gmt_offsets[src_airport] + 2400) if local_dep_gmt < 0 else local_dep_gmt
 
+            if(src_airport == 'ABQ' and dst_airport == 'DCA'):
+                print("local arr\t" + str(local_arrv))
+                print("local dep\t" + str(local_dep))
+                print("local arr gmt\t" + str(local_arrv_gmt))
+                print("local dep gmt\t" + str(local_dep_gmt))
+
+            local_arrv_gmt_m = local_arrv_gmt % 100
+            local_dep_gmt_m = local_dep_gmt % 100
             local_arrv_gmt_h = local_arrv_gmt - local_arrv_gmt_m
             local_dep_gmt_h = local_dep_gmt - local_dep_gmt_m
+
             total_time_diff = abs(
                 ((local_dep_gmt_h/100 * 60) + local_dep_gmt_m)
                 -
                 ((local_arrv_gmt_h/100 * 60) + local_arrv_gmt_m)
-                )
+            )
+
             self.graph.add_edge(
                 src_airport, dst_airport,
                 airline, flight_number, total_time_diff
             )
+        print(self.graph.edges['ABQ'])
 
 
 def main():
