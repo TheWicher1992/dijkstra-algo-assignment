@@ -1,15 +1,9 @@
 import imports.minheap as minheap
+import random
+import sys
+from dijkstar import Graph, find_path
 
-
-class graph:
-    def __init__(self):
-        self.edges = {}
-
-    def add_edge(self, u, v, l1, l2, weight):
-        if (u not in self.edges):
-            self.edges[u] = []
-
-        self.edges[u].append((v, l1, l2, weight))
+INFINITY = sys.maxsize
 
 
 class flight_path():
@@ -18,8 +12,9 @@ class flight_path():
         self.flight_data = []
         self.load_gmt_offsets(airport_dataf)
         self.load_flight_data(flight_dataf)
-        self.graph = graph()
+        self.graph = Graph(undirected=False)
         self.make_graph()
+        self.test_dijkstra()
 
     def load_gmt_offsets(self, filename):
         gmtf = open(filename, 'r')
@@ -86,11 +81,11 @@ class flight_path():
                 ((local_arrv_gmt_h/100 * 60) + local_arrv_gmt_m)
             )
 
-            self.graph.add_edge(
-                src_airport, dst_airport,
-                airline, flight_number, total_time_diff
-            )
-        print(self.graph.edges['ABQ'])
+            self.graph.add_edge(src_airport, dst_airport, total_time_diff)
+        print(self.graph)
+
+    def test_dijkstra(self):
+        print("PATH\n\n", find_path(self.graph, 'BOS', 'HOU'))
 
 
 def main():
