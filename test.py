@@ -15,6 +15,7 @@ class flight_path():
         self.graph = Graph(undirected=False)
         self.make_graph()
         self.test_dijkstra()
+        print("GRAPH:\n", self.graph)
 
     def load_gmt_offsets(self, filename):
         gmtf = open(filename, 'r')
@@ -89,7 +90,7 @@ class flight_path():
 
 
 def main():
-    flight_path("airport-data.txt", "flight-data.txt")
+    flight_path("airport-data.txt", "flight-data-smaller.txt")
 
 
 main()

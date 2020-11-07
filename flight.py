@@ -1,86 +1,16 @@
-import imports.minheap as minheap
-import random
 import sys
-from dijkstar import Graph, find_path
-
-INFINITY = sys.maxsize
-
-
-# def test_heap():
-#     heap = minheap.min_heap()
-#     test_data = [(10, 9), (15, 6), (2, 10), (5, 0), (11, 12)]
-
-#     for k in test_data:
-#         heap.insert(k[0], k[1])
-
-#     print(heap.delete_min())
-#     heap.decrease_key(2, 1)
-#     print(heap.delete_min())
-#     print(heap.delete_min())
-#     print(heap.delete_min())
-#     print(heap.delete_min())
-#     print(heap.delete_min())
-
-
-class graph:
-    def __init__(self):
-        self.edges = {}
-
-    def add_edge(self, u, v, l1, l2, weight):
-        if (u not in self.edges):
-            self.edges[u] = []
-
-        self.edges[u].append((v, l1, l2, weight))
-
-    def dijkstra(self, src, dst):
-        pred = {}
-        d = {}
-
-        for v in self.edges:
-            d[v] = INFINITY
-            pred[v] = []
-        d[src] = 0
-
-        priority_queue = minheap.min_heap()
-
-        for v in self.edges:
-            print(v, d[v])
-            priority_queue.insert(v, d[v])
-
-        while(not priority_queue.is_empty()):
-            item = priority_queue.delete_min()
-
-            u = item[0]
-            print("u ", u, " ", item[1])
-            for edge in self.edges[u]:
-                v = edge[0]
-                if(d[v] > d[u] + edge[3]):
-                    print("v ", v, " ", d[u] + edge[3])
-                    priority_queue.decrease_key(v, d[u] + edge[3])
-                    d[v] = d[u] + edge[3]
-                    pred[v].append(edge)
-
-        print(d, "\n\n")
+import random
+import imports.graph as graph
 
 
 class flight_path():
     def __init__(self, airport_dataf, flight_dataf):
-        self.gmt_offsets = {}
         self.flight_data = []
-        self.load_gmt_offsets(airport_dataf)
+        graph.load_gmt_offsets(airport_dataf)
         self.load_flight_data(flight_dataf)
-        self.graph = graph()
+        self.graph = graph.graph()
         self.make_graph()
         self.test_dijkstra()
-
-    def load_gmt_offsets(self, filename):
-        gmtf = open(filename, 'r')
-
-        n = int(gmtf.readline().strip())
-
-        for i in range(n):
-            airport, offset = gmtf.readline().strip().split("\t")
-            self.gmt_offsets[airport] = int(offset)
 
         # print(self.gmt_offsets)
 
@@ -95,57 +25,116 @@ class flight_path():
             data = flightf.readline()
 
         # print(self.flight_data)
+    def get_time_diff(self, src_time, dst_time):
+        src, src_t, src_ap = src_time
+        dst, dst_t, dst_ap = dst_time
+        print("SRC TIME: ", src_t, src_ap)
+        print("DST TIME: ", dst_t, dst_ap)
+
+        if(src_ap == 'P'):
+            if(src_t >= 1200):
+                pass
+            else:
+                src_t = (src_t + 1200) % 2400
+        else:
+            if(src_t >= 1200):
+                src_t = (src_t + 1200) % 2400
+
+        if(dst_ap == 'P'):
+            if(dst_t >= 1200):
+                pass
+            else:
+                dst_t = (dst_t + 1200) % 2400
+        else:
+            if(dst_t >= 1200):
+                dst_t = (dst_t + 1200) % 2400
+
+        print("24HR SRC TIME: ", src_t)
+        print("24HR DST TIME: ", dst_t)
+
+        src_t_gmt = (src_t - graph.gmt_offsets[src]) % 2400
+        dst_t_gmt = (dst_t - graph.gmt_offsets[dst]) % 2400
+
+        print("GMT SRC TIME: ", src_t_gmt)
+        print("GMT DST TIME: ", dst_t_gmt)
+
+        #src_gmt_m = src_t_gmt % 100
+        dst_gmt_m = dst_t_gmt % 100
+
+        if(src_t_gmt > dst_t_gmt):
+            dst_t_gmt = 2400 + dst_t_gmt
+        src_gmt_m = src_t_gmt % 100
+
+        src_gmt_h = src_t_gmt - src_gmt_m
+        dst_gmt_h = dst_t_gmt - dst_gmt_m
+
+        diff = (((src_gmt_h / 100) * 60) + src_gmt_m) - \
+            (((dst_gmt_h / 100) * 60) + dst_gmt_m)
+
+        print('TIME DIFF: ', diff)
+
+        return diff
+
+        pass
+
     def make_graph(self):
         for flight in self.flight_data:
             airline = flight[0]
             flight_number = flight[1]
             src_airport = flight[2]
 
-            local_dep_ap = flight[4]
+            local_srct_ap = flight[4]
 
-            local_dep = int(flight[3]) if local_dep_ap == 'A' else (
-                (int(flight[3]) + 1200) % 2400)
+            local_srct = int(flight[3])
 
             dst_airport = flight[5]
 
-            local_arrv_ap = flight[7]
+            local_dstt_ap = flight[7]
 
-            local_arrv = int(flight[6]) if local_arrv_ap == 'A' else (
-                (int(flight[6]) + 1200) % 2400)
+            local_dstt = int(flight[6])
 
-            local_arrv_gmt = local_arrv + self.gmt_offsets[dst_airport]
-            local_dep_gmt = local_dep + self.gmt_offsets[src_airport]
-
-            local_arrv_gmt = (
-                local_arrv + self.gmt_offsets[dst_airport] + 2400) if local_arrv_gmt < 0 else local_arrv_gmt
-            local_dep_gmt = (
-                local_dep + self.gmt_offsets[src_airport] + 2400) if local_dep_gmt < 0 else local_dep_gmt
-
-            if(src_airport == 'ABQ' and dst_airport == 'DCA'):
-                print("local arr\t" + str(local_arrv))
-                print("local dep\t" + str(local_dep))
-                print("local arr gmt\t" + str(local_arrv_gmt))
-                print("local dep gmt\t" + str(local_dep_gmt))
-
-            local_arrv_gmt_m = local_arrv_gmt % 100
-            local_dep_gmt_m = local_dep_gmt % 100
-            local_arrv_gmt_h = local_arrv_gmt - local_arrv_gmt_m
-            local_dep_gmt_h = local_dep_gmt - local_dep_gmt_m
-
-            total_time_diff = abs(
-                ((local_dep_gmt_h/100 * 60) + local_dep_gmt_m)
-                -
-                ((local_arrv_gmt_h/100 * 60) + local_arrv_gmt_m)
-            )
+            total_time_diff = self.get_time_diff(
+                (src_airport, local_srct, local_srct_ap), (dst_airport, local_dstt, local_dstt_ap))
 
             self.graph.add_edge(
                 src_airport, dst_airport,
-                airline, flight_number, total_time_diff
+                airline, flight_number,
+                (local_srct, local_srct_ap), (local_dstt,
+                                              local_dstt_ap), -total_time_diff
             )
-        print(self.graph.edges['BOS'])
+
+    def print_path(self, pred, src, dst):
+        flights = []
+        node = dst
+        while(node != src):
+            flights.append(pred[node])
+            node = pred[node][0]
+        flights = flights[::-1]
+
+        for flight in flights:
+            flight_code = flight[1][1]
+            flight_number = flight[1][2]
+            src_airport = flight[0]
+            src_time = flight[1][4]
+            dst_airport = flight[1][0]
+            dst_time = flight[1][5]
+
+            print(flight_code, flight_number, "("+src_airport,
+                  src_time[0], src_time[1]+"M -->", dst_airport, dst_time[0], dst_time[1]+"M)")
+        #print("\n\nFLIGHTS\n\n", flights)
 
     def test_dijkstra(self):
-        self.graph.dijkstra('BOS', 'HOU')
+        src = 'BOS'
+        dst = 'HOU'
+        start_time = (1000, 'A')
+        time_at_dst = 22
+        pred1 = self.graph.dijkstra(src, start_time)
+        time_reached = pred1[dst][1][5]
+        start_time = (graph.to_24h(time_reached) + (time_at_dst*100)) % 2400
+        pred2 = self.graph.dijkstra(dst, graph.to_12h(start_time))
+        self.print_path(pred1, src, dst)
+
+        self.print_path(pred2, dst, src)
 
 
 def main():

@@ -7,7 +7,6 @@ class min_heap():
         self.heap.append(())
 
         self.size += 1
-
         hole = self.size
 
         while(hole > 1 and priority < self.heap[int(hole/2)][1]):
@@ -15,7 +14,6 @@ class min_heap():
             hole = int(hole / 2)
 
         self.heap[hole] = (data, priority)
-        # print(self.heap)
 
     def is_leaf(self, i):
         print("called")
@@ -63,9 +61,6 @@ class min_heap():
             item = self.heap[1]
             self.heap.pop(1)
             return item
-
-        # print(self.heap)
-
         item = self.heap[1]
         print("ejected prt: ", item[1])
         self.heap[1] = self.heap[self.size]
