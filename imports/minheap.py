@@ -2,6 +2,7 @@ class min_heap():
     def __init__(self):
         self.heap = [()]
         self.size = 0
+        self.indexes = {}
 
     def insert(self, data, priority):
         self.heap.append(())
@@ -11,12 +12,14 @@ class min_heap():
 
         while(hole > 1 and priority < self.heap[int(hole/2)][1]):
             self.heap[hole] = self.heap[int(hole / 2)]
+            self.indexes[self.heap[int(hole / 2)][0]] = hole
             hole = int(hole / 2)
 
         self.heap[hole] = (data, priority)
+        self.indexes[data] = hole
 
     def is_leaf(self, i):
-        print("called")
+        # print("called")
         if(2*i > self.size):
             return True
         return False
@@ -42,14 +45,18 @@ class min_heap():
         if(self.has_right(hole)):
             return 2*hole+1
 
-    def decrease_key(self, data, priority):
+    def decrease_key(self, data, priority, old_p):
         if(self.size == 0):
             return -1
-        for i in range(1, self.size):
-            if(self.heap[i][0] == data):
-                self.heap.pop(i)
-                self.size -= 1
-                break
+        # for i in range(1, self.size):
+        #     if(self.heap[i][0] == data):
+        #         self.heap.pop(i)
+        #         self.size -= 1
+        #         break
+
+        i = self.heap.index((data, old_p))
+        self.heap.pop(i)
+        self.size -= 1
 
         self.insert(data, priority)
 
@@ -62,7 +69,7 @@ class min_heap():
             self.heap.pop(1)
             return item
         item = self.heap[1]
-        print("ejected prt: ", item[1])
+        #print("ejected prt: ", item[1])
         self.heap[1] = self.heap[self.size]
         self.heap.pop(self.size)
         self.size -= 1

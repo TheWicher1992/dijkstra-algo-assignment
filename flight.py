@@ -10,9 +10,10 @@ class flight_path():
         self.load_flight_data(flight_dataf)
         self.graph = graph.graph()
         self.make_graph()
-        self.test_dijkstra()
+        # print(self.graph.edges)
+        # # self.test_dijkstra()
 
-        # print(self.gmt_offsets)
+        # # print(self.gmt_offsets)
 
     def load_flight_data(self, flight_dataf):
         flightf = open(flight_dataf, 'r')
@@ -28,8 +29,8 @@ class flight_path():
     def get_time_diff(self, src_time, dst_time):
         src, src_t, src_ap = src_time
         dst, dst_t, dst_ap = dst_time
-        print("SRC TIME: ", src_t, src_ap)
-        print("DST TIME: ", dst_t, dst_ap)
+        # print("SRC TIME: ", src_t, src_ap)
+        # print("DST TIME: ", dst_t, dst_ap)
 
         if(src_ap == 'P'):
             if(src_t >= 1200):
@@ -49,16 +50,16 @@ class flight_path():
             if(dst_t >= 1200):
                 dst_t = (dst_t + 1200) % 2400
 
-        print("24HR SRC TIME: ", src_t)
-        print("24HR DST TIME: ", dst_t)
+        # print("24HR SRC TIME: ", src_t)
+        # print("24HR DST TIME: ", dst_t)
 
         src_t_gmt = (src_t - graph.gmt_offsets[src]) % 2400
         dst_t_gmt = (dst_t - graph.gmt_offsets[dst]) % 2400
 
-        print("GMT SRC TIME: ", src_t_gmt)
-        print("GMT DST TIME: ", dst_t_gmt)
+        # print("GMT SRC TIME: ", src_t_gmt)
+        # print("GMT DST TIME: ", dst_t_gmt)
 
-        #src_gmt_m = src_t_gmt % 100
+        # src_gmt_m = src_t_gmt % 100
         dst_gmt_m = dst_t_gmt % 100
 
         if(src_t_gmt > dst_t_gmt):
@@ -71,7 +72,7 @@ class flight_path():
         diff = (((src_gmt_h / 100) * 60) + src_gmt_m) - \
             (((dst_gmt_h / 100) * 60) + dst_gmt_m)
 
-        print('TIME DIFF: ', diff)
+        # print('TIME DIFF: ', diff)
 
         return diff
 
@@ -121,24 +122,44 @@ class flight_path():
 
             print(flight_code, flight_number, "("+src_airport,
                   src_time[0], src_time[1]+"M -->", dst_airport, dst_time[0], dst_time[1]+"M)")
-        #print("\n\nFLIGHTS\n\n", flights)
+        # print("\n\nFLIGHTS\n\n", flights)
 
-    def test_dijkstra(self):
-        src = 'BOS'
-        dst = 'HOU'
-        start_time = (1000, 'A')
-        time_at_dst = 22
-        pred1 = self.graph.dijkstra(src, start_time)
+    def get_route(self, src, dst, start_time, time_at_dst):
+        # src = 'BOS'
+        # dst = 'HOU'
+        # start_time = (1000, 'A')
+        # time_at_dst = 22
+        if(src not in self.graph.edges or dst not in self.graph.edges):
+            print("Source or Destination does not exist\n")
+            return
+        pred1, d1 = self.graph.dijkstra(src, start_time)
+        if(d1[dst] == graph.INFINITY):
+            print("No possible schedule\n")
+            return
         time_reached = pred1[dst][1][5]
         start_time = (graph.to_24h(time_reached) + (time_at_dst*100)) % 2400
-        pred2 = self.graph.dijkstra(dst, graph.to_12h(start_time))
+        pred2, d2 = self.graph.dijkstra(dst, graph.to_12h(start_time))
         self.print_path(pred1, src, dst)
 
         self.print_path(pred2, dst, src)
 
 
 def main():
-    flight_path("airport-data.txt", "flight-data.txt")
+    flight_sim = flight_path("airport-data.txt", "flight-data.txt")
+    try:
+        schedule = input(
+            "Enter SRC DST START_TIME TIME_YOU_WANT_TO_SPENT:\n").split(" ")
+        if(len(schedule) > 5):
+            print("Invalid Input")
+            return
+        src = schedule[0]
+        dst = schedule[1]
+        start_time = (int(schedule[2]), schedule[3])
+        time_at_dst = int(schedule[4])
+
+        flight_sim.get_route(src, dst, start_time, time_at_dst)
+    except:
+        print("Invalid Input")
 
 
 main()

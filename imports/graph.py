@@ -19,8 +19,8 @@ INFINITY = sys.maxsize
 def get_time_diff(src_time, dst_time):
     src, src_t, src_ap = src_time
     dst, dst_t, dst_ap = dst_time
-    print("SRC TIME: ", src_t, src_ap)
-    print("DST TIME: ", dst_t, dst_ap)
+    # print("SRC TIME: ", src_t, src_ap)
+    # print("DST TIME: ", dst_t, dst_ap)
 
     if(src_ap == 'P'):
         if(src_t >= 1200):
@@ -40,14 +40,14 @@ def get_time_diff(src_time, dst_time):
         if(dst_t >= 1200):
             dst_t = (dst_t + 1200) % 2400
 
-    print("24HR SRC TIME: ", src_t)
-    print("24HR DST TIME: ", dst_t)
+    # print("24HR SRC TIME: ", src_t)
+    # print("24HR DST TIME: ", dst_t)
 
     src_t_gmt = (src_t - gmt_offsets[src]) % 2400
     dst_t_gmt = (dst_t - gmt_offsets[dst]) % 2400
 
-    print("GMT SRC TIME: ", src_t_gmt)
-    print("GMT DST TIME: ", dst_t_gmt)
+    # print("GMT SRC TIME: ", src_t_gmt)
+    # print("GMT DST TIME: ", dst_t_gmt)
 
     # src_gmt_m = src_t_gmt % 100
     dst_gmt_m = dst_t_gmt % 100
@@ -62,7 +62,7 @@ def get_time_diff(src_time, dst_time):
     diff = (((src_gmt_h / 100) * 60) + src_gmt_m) - \
         (((dst_gmt_h / 100) * 60) + dst_gmt_m)
 
-    print('TIME DIFF: ', diff)
+    # print('TIME DIFF: ', diff)
 
     return diff
 
@@ -126,46 +126,46 @@ class graph:
         priority_queue = minheap.min_heap()
 
         for v in self.edges:
-            print(v, d[v])
+            # print(v, d[v])
             priority_queue.insert(v, d[v])
 
         while(not priority_queue.is_empty()):
             item = priority_queue.delete_min()
 
             u = item[0]
-            print("u ", u, " ", item[1])
+            # print("u ", u, " ", item[1])
             for edge in self.edges[u]:
                 v = edge[0]
                 if(u == src):
                     diff = get_time_diff(
                         (u, start_time[0], start_time[1]), (u, edge[4][0], edge[4][1]))
-                    print("diff: ", diff)
+                    # print("diff: ", diff)
                     if(diff > -120):
                         continue
                     else:
                         if(d[v] > d[u] + edge[3] + abs(diff)):
-                            print("v ", v, " ", d[u] + edge[3] + abs(diff))
+                            # print("v ", v, " ", d[u] + edge[3] + abs(diff))
                             priority_queue.decrease_key(
-                                v, d[u] + edge[3] + abs(diff))
+                                v, d[u] + edge[3] + abs(diff), d[v])
                             d[v] = d[u] + edge[3] + abs(diff)
                             pred[v] = (u, edge)
                 else:
                     if(len(pred[u]) == 0):
                         continue
                     landed_time = (u, pred[u][1][5][0], pred[u][1][5][1])
-                    print("LANDED: ", landed_time)
-                    print("TAKE: ", (u, edge[4][0], edge[4][1]))
+                    # print("LANDED: ", landed_time)
+                    # print("TAKE: ", (u, edge[4][0], edge[4][1]))
                     diff = get_time_diff(
                         landed_time, (u, edge[4][0], edge[4][1]))
                     if(diff > -60):
                         continue
                     else:
                         if(d[v] > d[u] + edge[3] + abs(diff)):
-                            print("v ", v, " ", d[u] + edge[3]+abs(diff))
+                            # print("v ", v, " ", d[u] + edge[3]+abs(diff))
                             priority_queue.decrease_key(
-                                v, d[u] + edge[3]+abs(diff))
+                                v, d[u] + edge[3]+abs(diff), d[v])
                             d[v] = d[u] + edge[3]+abs(diff)
                             pred[v] = (u, edge)
 
-        print(d, "\n\n", pred)
-        return pred
+        # print(d, "\n\n", pred)
+        return pred, d
